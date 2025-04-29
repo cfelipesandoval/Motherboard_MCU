@@ -1,4 +1,4 @@
-#include "external_clock.h"
+#include "CDCE_6214.h"
 
 CDCE6214::CDCE6214(uint8_t sda, uint8_t scl, uint8_t clock_address)
 {
