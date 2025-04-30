@@ -15,12 +15,19 @@ class ADC3644
     // Register Writes
     uint8_t reset();
     uint8_t setDecimationBy(int dec);
+    uint8_t setNCOfreq(double freq);
+    uint8_t setGain(int gain);
+    uint8_t setClockFreq(double freq);
+    double getClockFreq();
+
 
   private:
     uint8_t writeToReg(int reg, uint8_t data);
 
     // Variables
-    int decimationBy; // DDC Divider
+    int _decimationBy; // DDC Divider
+    double _NCOfreq;
+    double _clockfreq;
     
 
     // Pins

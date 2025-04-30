@@ -34,7 +34,7 @@
 #define ADC_CS 12
 #define ADC_RESET 17
 
-#define ADC_SPI_FREQ 10000000
+#define ADC_SPI_FREQ 1000000
 
 // ADC Registers
 #define ADC_RESET_ADDRESS 0x00

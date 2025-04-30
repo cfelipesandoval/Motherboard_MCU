@@ -8,21 +8,20 @@ ADC3644 adc(&ext_clock);
 
 void setup() 
 {
-  
   while(!(Serial.read() == 'y'));
 
-  // Serial.println("Init start"); // Default 40 MHz MCU and ~50 MHz ADC
+  Serial.println("Init start"); // Default 40 MHz MCU and ~50 MHz ADC
   
   // // Initialize Clocks
-  // Serial.println("\nInitializing Clocks");
+  Serial.println("\nInitializing Clocks");
 
-  // if(ext_clock.init(40, 50))
-  // {
-  //   Serial.println("Error Initializing Clock");
-  //   return;
-  // } 
+  if(ext_clock.init(40, 50))
+  {
+    Serial.println("Error Initializing Clock");
+    return;
+  }
 
-  // Serial.println("Successful Clocks Initialization");
+  Serial.println("Successful Clocks Initialization");
 
   // ADC Initialization
   Serial.println("\nInitializing ADC");
@@ -30,11 +29,8 @@ void setup()
   while(1)
   {
     adc.init();
+    delay(1);
   }
-  
-
-
-
 
   Serial.println("Successful ADC Initialization");
 
