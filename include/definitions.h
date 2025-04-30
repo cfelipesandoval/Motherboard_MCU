@@ -28,11 +28,16 @@
 // #define ADC_CS 47
 // #define ADC_RESET 1
 
+// Data Pins (With arduino pinout)
 #define ADC_SCL 13
 #define ADC_SDIO 11
 #define ADC_CS 12
 #define ADC_RESET 17
 
+#define ADC_SPI_FREQ 10000000
+
+// ADC Registers
+#define ADC_RESET_ADDRESS 0x00
 
 // Error Codes
 #define EXIT_SUCCESS 0
