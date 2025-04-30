@@ -26,11 +26,7 @@ void setup()
   // ADC Initialization
   Serial.println("\nInitializing ADC");
 
-  while(1)
-  {
-    adc.init();
-    delay(1);
-  }
+  adc.init();
 
   Serial.println("Successful ADC Initialization");
 

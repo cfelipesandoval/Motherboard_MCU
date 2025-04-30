@@ -14,11 +14,10 @@ ADC3644::ADC3644(CDCE6214 * ext_clock, int scl, int sdio, int cs, int reset)
 
   SPI.begin(scl, sdio, sdio, cs); // Probably gotta add specific pins here
 
-  
   // Throw away first transaction (check)
   SPI.beginTransaction(SPISettings(ADC_SPI_FREQ, MSBFIRST, SPI_MODE0));
-  digitalWrite(cs,LOW);
-  digitalWrite(cs,HIGH);
+  digitalWrite(cs, LOW);
+  digitalWrite(cs, HIGH);
   SPI.endTransaction();
 
   _ext_clock = ext_clock;
@@ -36,69 +35,79 @@ uint8_t ADC3644::init()
   // Reset (may be unnecessary)
   reset();
 
-  Serial.print("\nCMOS?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\nCMOS?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Set output to 1-Wire CMOS
   writeToReg(0x07, 0x6C); // 011 0 1 100
   writeToReg(0x13, 0x01); // 0000000 1
 
-  Serial.print("\nPowerDown?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\nPowerDown?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Power down unsued outputs
   writeToReg(0x0A, 0xFF);
   writeToReg(0x0B, 0xEE);
   writeToReg(0x0C, 0xFD);
 
-  Serial.print("\ndclkin en?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\ndclkin en?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Enable DCLKIN? Ideally MCU would be slave but will test
   writeToReg(0x18, 0x10);
 
-  Serial.print("\nfclk en?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\nfclk en?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Enable FCLK
   writeToReg(0x19, 0x82); // 1 00 0 00 1 0
 
-  Serial.print("\n16bit?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\n16bit?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Select 16-bit output
   writeToReg(0x1B, 0x08); // 0 0 001 000
 
-  Serial.print("\ndclkin on rise?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\ndclkin on rise?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Enable DCLKIN on rising AND falling edge 
   writeToReg(0x1F, 0x50); // 0 1 0 1 0 000, otherwise 0 1 0 1 1 000 (0x58) for rising edge only
   
-  Serial.print("\nfclk for 16bit?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\nfclk for 16bit?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Configure FCLK pattern for 16-bit Complex Decimation
   writeToReg(0x20, 0xFF); 
   writeToReg(0x21, 0xFF); 
   writeToReg(0x22, 0x0F);
 
-  Serial.print("\ndecimation en?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\ndecimation en?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Enable decimation filter
   writeToReg(0x24, 0x06); // 00 0 00 1 1 0
 
-  Serial.print("\ndecimation by 8?: ");
-  while(!(Serial.read() == 'y'));
+  // Serial.print("\ndecimation by 8?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Set decimation by 8 (or whatever is needed)
   setDecimationBy(8);
 
-  Serial.print("\nset nco?: ");
-  while(!(Serial.read() == 'y'));
-  // Set NCO frequency
-  setNCOfreq(10);
+  // Serial.print("\nset nco?: ");
+  // while(!(Serial.read() == 'y'));
 
-  Serial.print("\nset gain?: ");
-  while(!(Serial.read() == 'y'));
+  // Set NCO frequency to 30 MHz
+  setNCOfreq(30);
+
+  // Serial.print("\nset gain?: ");
+  // while(!(Serial.read() == 'y'));
+
   // Set Gain to 3 dB
-  setGain(6);
+  setGain(3);
 
   return EXIT_SUCCESS;
 }
-
 
 uint8_t ADC3644::setDecimationBy(int dec)
 {
@@ -131,7 +140,7 @@ uint8_t ADC3644::setDecimationBy(int dec)
   {
     Serial.println("Error: Decimation Divider Must be 2, 4, 8, 16 or 32");
 
-    return EXIT_ERROR; 
+    return EXIT_FAILURE; 
   }
 
   // Setup decimation divider (bits 6-4 control decimation by)
@@ -144,16 +153,21 @@ uint8_t ADC3644::setDecimationBy(int dec)
 
 // Freq in MHz
 // Really need to make sure this does the right math
-uint8_t ADC3644::setNCOfreq(double freq)
+// Also right now if clock frequency is too low it just doubles whatever f_nco is, this might not be smart
+uint8_t ADC3644::setNCOfreq(double f_nco)
 {
-  if(abs(freq) > (getClockFreq() / 2))
+  if(abs(f_nco) > (_clockfreq / 2))
   {
     Serial.println("Frequency has to be within -Fs/2 < f < Fs/2");
-
-    return EXIT_ERROR;
+    
+    Serial.println("Setting Fs to 2 * freq_nco");
+    if(setClockFreq(2.08 * f_nco)) // Set clock to twice as much plus 8%
+    {
+      return EXIT_FAILURE;
+    }
   }
 
-  int32_t f_out = freq * (4294967296) / getClockFreq(); // Check that this does 2's complement
+  int32_t f_out = f_nco * (4294967296) / _clockfreq; // Check that this does 2's complement
   
   // ADC Channel A
   writeToReg(0x2A, (f_out & 0xFF000000) >> 24);
@@ -191,7 +205,7 @@ uint8_t ADC3644::setGain(int gain)
   {
     Serial.println("Error: gain can only be set to 0, 3 or 6 dB");
 
-    return EXIT_ERROR;
+    return EXIT_FAILURE;
   }
 
   // Set gain and toggle the toggle bits (0x22)

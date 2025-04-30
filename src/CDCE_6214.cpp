@@ -12,19 +12,19 @@ CDCE6214::CDCE6214(uint8_t sda, uint8_t scl, uint8_t clock_address)
 uint8_t CDCE6214::init(double ch1freq, double ch2freq)
 {
   Serial.println("Setting D");
-  if(setD(0.5)) return EXIT_ERROR;
+  if(setD(0.5)) return EXIT_FAILURE;
   
   Serial.println("Setting N");
-  if(setN(0x0100)) return EXIT_ERROR;
+  if(setN(0x0100)) return EXIT_FAILURE;
   
   Serial.println("Setting PSA");
-  if(setPSA(4)) return EXIT_ERROR;
+  if(setPSA(4)) return EXIT_FAILURE;
   
   Serial.println("Setting CH1");
-  if(setChannelFreq(ch1freq, 0)) return EXIT_ERROR;
+  if(setChannelFreq(ch1freq, 0)) return EXIT_FAILURE;
   
   Serial.println("Setting CH2"); // Sets MCU Clock to 40 MHz
-  if(setChannelFreq(ch2freq, 1)) return EXIT_ERROR; // Sets ADC Clock to ~50 MHz (50.196078 MHz)
+  if(setChannelFreq(ch2freq, 1)) return EXIT_FAILURE; // Sets ADC Clock to ~50 MHz (50.196078 MHz)
   
   Serial.print("\nChannel 1 Frequency: ");
   Serial.println(CHfreq[0]);
@@ -41,7 +41,7 @@ uint8_t CDCE6214::setD(double divider)
 
   div = 0x0400 + floor(divider);
 
-  if(writeToReg(DIVIDER_ADDRESS, div)) return EXIT_ERROR;
+  if(writeToReg(DIVIDER_ADDRESS, div)) return EXIT_FAILURE;
 
   D = divider;
 
@@ -50,7 +50,7 @@ uint8_t CDCE6214::setD(double divider)
 
 uint8_t CDCE6214::setN(int n)
 {
-  if(writeToReg(N_ADDRESS, n)) return EXIT_ERROR;
+  if(writeToReg(N_ADDRESS, n)) return EXIT_FAILURE;
 
   N = n;
 
@@ -76,10 +76,10 @@ uint8_t CDCE6214::setPSA(int psa)
   else
   {
     Serial.println("Error, PSA Must be 4, 5 or 6");
-    return EXIT_ERROR;
+    return EXIT_FAILURE;
   }
 
-  if(writeToReg(PSA_ADDRESS, ps)) return EXIT_ERROR;
+  if(writeToReg(PSA_ADDRESS, ps)) return EXIT_FAILURE;
 
   PSA = psa;
 
@@ -90,11 +90,11 @@ uint8_t CDCE6214::setCHD(int chd, int channel)
 {
  if(channel == 0)
  {
-  if(writeToReg(CH1_ADDRESS, chd)) return EXIT_ERROR;
+  if(writeToReg(CH1_ADDRESS, chd)) return EXIT_FAILURE;
  } 
  else if(channel == 1)
  {
-  if(writeToReg(CH2_ADDRESS, chd)) return EXIT_ERROR;
+  if(writeToReg(CH2_ADDRESS, chd)) return EXIT_FAILURE;
  }
 
   return EXIT_SUCCESS;
@@ -107,13 +107,13 @@ uint8_t CDCE6214::setFreq(double freq, int channel)
   {
     Serial.println("Frequency Must be Below 125 MHz");
 
-    return EXIT_ERROR;
+    return EXIT_FAILURE;
   } 
   else if(freq <= 0.01)
   {
     Serial.println("Frequency Must be Above 10 kHz");
 
-    return EXIT_ERROR;
+    return EXIT_FAILURE;
   } 
 
   CHD[channel] = floor(crystal_freq * N / (D * PSA * freq));
@@ -124,15 +124,15 @@ uint8_t CDCE6214::setFreq(double freq, int channel)
 
 uint8_t CDCE6214::setChannelFreq(double freq, int channel)
 {
-  if(setFreq(freq, channel)) return EXIT_ERROR;
+  if(setFreq(freq, channel)) return EXIT_FAILURE;
 
   if(channel == 0)
  {
-  if(writeToReg(CH1_ADDRESS, CHD[channel])) return EXIT_ERROR;
+  if(writeToReg(CH1_ADDRESS, CHD[channel])) return EXIT_FAILURE;
  } 
  else if(channel == 1)
  {
-  if(writeToReg(CH2_ADDRESS, CHD[channel])) return EXIT_ERROR;
+  if(writeToReg(CH2_ADDRESS, CHD[channel])) return EXIT_FAILURE;
  }
 
   return EXIT_SUCCESS;
@@ -151,7 +151,7 @@ uint8_t CDCE6214::writeToReg(int reg, int data)
   // {
   //   Serial.println("Error Initializing I2C");
 
-  //   return EXIT_ERROR;
+  //   return EXIT_FAILURE;
   // }
 
   Wire.write((reg & 0xFF00) >> 8); // Upper half of register address
@@ -160,7 +160,7 @@ uint8_t CDCE6214::writeToReg(int reg, int data)
 
   //   Serial.println("Error Upper Half of Register");
 
-  //   return EXIT_ERROR;
+  //   return EXIT_FAILURE;
   // }
 
   Wire.write(reg & 0xFF); // Lower half of register address
@@ -169,7 +169,7 @@ uint8_t CDCE6214::writeToReg(int reg, int data)
   //   Serial.println("Error Lower Half of Register");
 
 
-  //   return EXIT_ERROR;
+  //   return EXIT_FAILURE;
   // }
 
   Wire.write((data & 0xFF00) >> 8); // Upper half of data
@@ -180,7 +180,7 @@ uint8_t CDCE6214::writeToReg(int reg, int data)
   //     Serial.println("Error Upper Half of Data");
   //   }
 
-  //   return EXIT_ERROR;
+  //   return EXIT_FAILURE;
   // }
 
   Wire.write(data & 0xFF); // Lower half of data
@@ -191,7 +191,7 @@ uint8_t CDCE6214::writeToReg(int reg, int data)
   //     Serial.println("Error Lower Half of Data");
   //   }
 
-  //   return EXIT_ERROR;
+  //   return EXIT_FAILURE;
   // }
 
   Wire.endTransmission();
