@@ -100,7 +100,6 @@ uint8_t CDCE6214::setCHD(int chd, int channel)
   return EXIT_SUCCESS;
 }
 
-
 uint8_t CDCE6214::setFreq(double freq, int channel)
 {
   if(freq > 125)
@@ -138,6 +137,8 @@ uint8_t CDCE6214::setChannelFreq(double freq, int channel)
   return EXIT_SUCCESS;
 }
 
+
+// Gotta check if an acknowledgment bit needs to be read
 uint8_t CDCE6214::writeToReg(int reg, int data)
 {
   Serial.print("Writing to Register 0x");

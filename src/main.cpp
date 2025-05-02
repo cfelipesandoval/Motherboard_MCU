@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include "CDCE_6214.h"
 #include "ADC_3644.h"
+#include "Rpi_Communicator.h"
 #include "definitions.h"
 
 CDCE6214 ext_clock(5, 6); // Need to make sure this is GPIO 8 and 9 (SDA and SCL)
 ADC3644 adc(&ext_clock);
+RpiCommunicator raspi(&adc);
 
 void setup() 
 {
@@ -30,10 +32,15 @@ void setup()
 
   Serial.println("Successful ADC Initialization");
 
+  Serial.println("Initializing Communication with Raspberry PI");
+
+  raspi.begin();
+
   Serial.println("Init success");
 }
 
 void loop() 
 {
-
+  raspi.update();
 }
+

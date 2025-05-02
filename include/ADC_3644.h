@@ -17,13 +17,18 @@ class ADC3644
     uint8_t setNCOfreq(double f_nco);
     uint8_t setGain(int gain);
     uint8_t setClockFreq(double freq);
+
     double getClockFreq();
+    double getNCOFreq();
+    int getDecimationBy();
+    int getGain();
 
   private:
     uint8_t writeToReg(int reg, uint8_t data);
 
     // Variables
     int _decimationBy; // DDC Divider
+    int _gain;
     double _NCOfreq;
     double _clockfreq;
 

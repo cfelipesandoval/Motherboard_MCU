@@ -2,6 +2,8 @@
 #define DEFINITIONS
 
 
+#define DEBUG
+
 // // CDCE6214 Definitions
 
 // Data Pins
@@ -43,6 +45,10 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
+
+// // Communication Protocol 
+#define MCU_RX_PIN 50
+#define MCU_TX_PIN 49
 
 
 #endif

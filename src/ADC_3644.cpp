@@ -169,6 +169,8 @@ uint8_t ADC3644::setNCOfreq(double f_nco)
 
   int32_t f_out = f_nco * (4294967296) / _clockfreq; // Check that this does 2's complement
   
+  _NCOfreq = f_nco; // Gotta check that this is right;
+
   // ADC Channel A
   writeToReg(0x2A, (f_out & 0xFF000000) >> 24);
   writeToReg(0x2B, (f_out & 0xFF0000) >> 16);
@@ -234,6 +236,21 @@ uint8_t ADC3644::setClockFreq(double freq)
 double ADC3644::getClockFreq()
 {
   return _ext_clock->getChannelFreq(1);
+}
+
+double ADC3644::getNCOFreq()
+{
+  return _NCOfreq;
+}
+
+int ADC3644::getDecimationBy()
+{
+  return _decimationBy;
+}
+
+int ADC3644::getGain()
+{
+  return _gain;
 }
 
 uint8_t ADC3644::writeToReg(int reg, uint8_t data)
