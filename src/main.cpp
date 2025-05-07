@@ -4,13 +4,15 @@
 #include "Rpi_Communicator.h"
 #include "definitions.h"
 
-CDCE6214 ext_clock(5, 6); // Need to make sure this is GPIO 8 and 9 (SDA and SCL)
+CDCE6214 ext_clock(GPIO_NUM_8, GPIO_NUM_9); // Need to make sure this is GPIO 8 and 9 (SDA and SCL)
 ADC3644 adc(&ext_clock);
 RpiCommunicator raspi(&adc);
 
-void setup() 
+void setup()
 {
   while(!(Serial.read() == 'y'));
+
+  setCpuFrequencyMhz(240);
 
   Serial.println("Init start"); // Default 40 MHz MCU and ~50 MHz ADC
   
@@ -36,10 +38,12 @@ void setup()
 
   raspi.begin();
 
-  Serial.println("Init success");
+  Serial.println("Successful Communication with Raspberry PI Initialization");
+
+  Serial.println("\nInit success");
 }
 
-void loop() 
+void loop()
 {
   raspi.update();
 }

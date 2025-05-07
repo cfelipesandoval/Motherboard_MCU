@@ -1,38 +1,31 @@
 #include "Rpi_Communicator.h"
 
-RpiCommunicator::RpiCommunicator(ADC3644 * adc) 
-{
-  _adc = adc;
+RpiCommunicator::RpiCommunicator(ADC3644* adc_ptr)
+  : adc(adc_ptr) {}
 
+void RpiCommunicator::begin()
+{
+  #ifdef DEBUG
+  Serial.println("ESP32 RpiCommunicator starting with USB CDC...");
+  #endif
+
+  // Register command handlers
   registerCommand("N", &RpiCommunicator::handleSetNCOfreq);
   registerCommand("D", &RpiCommunicator::handleSetDecimationBy);
   registerCommand("G", &RpiCommunicator::handleSetGain);
   registerCommand("C", &RpiCommunicator::handleSetClockFreq);
+  registerCommand("R", &RpiCommunicator::handleReset);
 }
 
-void RpiCommunicator::begin()
-{
-  // Start serial communication with Raspberry Pi
-  Serial2.begin(115200, SERIAL_8N1, MCU_RX_PIN, MCU_TX_PIN);
-  
-  // Serial for debugging
-  #ifdef DEBUG
-  Serial.begin(115200);
-  Serial.println("ESP32 RpiCommunicator starting...");
-  #endif
-  
-  // Example: Setup an LED
-  pinMode(LED_BUILTIN, OUTPUT);
-}
-  
 void RpiCommunicator::update() 
 {
-  // Check for incoming messages
-  while (Serial2.available() > 0) 
+  if (!Serial.available()) return;
+
+  while (Serial.available() > 0) 
   {
-    char c = Serial2.read();
-    
-    if (c == START_MARKER) 
+    char c = Serial.read();
+
+    if (c == START_MARKER)
     {
       receivedMessage = "";
       messageInProgress = true;
@@ -48,7 +41,7 @@ void RpiCommunicator::update()
     }
   }
 }
-  
+
 void RpiCommunicator::registerCommand(String cmd, CommandHandler handler) 
 {
   if (numCommands < MAX_COMMANDS) 
@@ -58,13 +51,12 @@ void RpiCommunicator::registerCommand(String cmd, CommandHandler handler)
     numCommands++;
   }
 }
-  
+
 void RpiCommunicator::sendMessage(String command, String data) 
 {
   String message = String(START_MARKER) + command + String(SEPARATOR) + data + String(END_MARKER);
-  Serial2.print(message);
-  
-  // Debug
+  Serial.print(message);
+
   #ifdef DEBUG
   Serial.println("Sent: " + message);
   #endif
@@ -73,13 +65,13 @@ void RpiCommunicator::sendMessage(String command, String data)
 uint8_t RpiCommunicator::processMessage(String message) 
 {
   #ifdef DEBUG
-  Serial.println("Received: " + message);  // Debug
+  Serial.println("Received: " + message);
   #endif
 
   int separatorIndex = message.indexOf(SEPARATOR);
   String command = "";
   String data = "";
-  
+
   if (separatorIndex != -1) 
   {
     command = message.substring(0, separatorIndex);
@@ -89,8 +81,7 @@ uint8_t RpiCommunicator::processMessage(String message)
   {
     command = message;
   }
-  
-  // Find and execute the appropriate command handler
+
   for (int i = 0; i < numCommands; i++) 
   {
     if (commandHandlers[i].command == command) 
@@ -99,54 +90,78 @@ uint8_t RpiCommunicator::processMessage(String message)
       return EXIT_SUCCESS;
     }
   }
-  
-  // Command not found
-  sendMessage("A", "Unknown command: " + command);
 
+  sendMessage("A", "Unknown command: " + command);
   return EXIT_FAILURE;
 }
-  
+
+String RpiCommunicator::resultToMessage(ADCResult res)
+{
+  switch (res) 
+  {
+    case ADC_OK: return "OK";
+    case ADC_ERR_DECIMATION: return "Invalid decimation value";
+    case ADC_ERR_NCO_RANGE: return "NCO frequency out of range";
+    case ADC_ERR_CLOCK_SET: return "Failed to set clock frequency";
+    case ADC_ERR_GAIN_INVALID: return "Invalid gain value";
+    case ADC_ERR_WRITE_FAIL: return "Failed to write to register";
+    default: return "Unknown ADC error";
+  }
+}
+
 // Command handlers
+
 void RpiCommunicator::handleSetNCOfreq(String data)
 {
-  if(_adc->setNCOfreq(data.toDouble()))
+  ADCResult res = adc->setNCOfreq(data.toDouble());
+  if (res != ADC_OK) 
   {
-    sendMessage("E", "Error setting NCO Frequency");
+    sendMessage("E", resultToMessage(res));
     return;
   }
-
-  sendMessage("N", "NCO Frequency set to " + String(_adc->getNCOFreq()) + " MHz");
+  sendMessage("N", "NCO Frequency set to " + String(adc->getNCOFreq()) + " MHz");
 }
 
 void RpiCommunicator::handleSetDecimationBy(String data)
 {
-  if(_adc->setDecimationBy(data.toInt()))
+  ADCResult res = adc->setDecimationBy(data.toInt());
+  if (res != ADC_OK) 
   {
-    sendMessage("E", "Error setting Decimation By");
+    sendMessage("E", resultToMessage(res));
     return;
   }
-
-  sendMessage("D", "Decimation By set to " + String(_adc->getDecimationBy()));
+  sendMessage("D", "Decimation By set to " + String(adc->getDecimationBy()));
 }
 
 void RpiCommunicator::handleSetGain(String data)
 {
-  if(_adc->setGain(data.toInt()))
+  ADCResult res = adc->setGain(data.toInt());
+  if (res != ADC_OK) 
   {
-    sendMessage("E", "Error setting Gain");
+    sendMessage("E", resultToMessage(res));
     return;
   }
-
-  sendMessage("G", "Gain set to " + String(_adc->getGain()) + " dB");
+  sendMessage("G", "Gain set to " + String(adc->getGain()) + " dB");
 }
 
 void RpiCommunicator::handleSetClockFreq(String data)
 {
-  if(_adc->setClockFreq(data.toDouble()))
+  ADCResult res = adc->setClockFreq(data.toDouble());
+  if (res != ADC_OK) 
   {
-    sendMessage("E", "Error setting Clock Frequency");
+    sendMessage("E", resultToMessage(res));
     return;
   }
+  sendMessage("C", "Clock Frequency set to " + String(adc->getClockFreq()) + " MHz");
+}
 
-  sendMessage("C", "Clock Frequency set to " + String(_adc->getClockFreq()) + " MHz");
+void RpiCommunicator::handleReset(String unused)
+{
+  ADCResult res = adc->reset();
+  if (res != ADC_OK) 
+  {
+    sendMessage("E", resultToMessage(res));
+    return;
+  }
+  sendMessage("R", "ADC Successfully Reset");
 }

@@ -1,10 +1,9 @@
-#ifndef EXT_CLOCK
-#define EXT_CLOCK
+#ifndef CDCE_6214_H
+#define CDCE_6214_H
 
 #include <Arduino.h>
 #include <Wire.h>
 #include "definitions.h"
-
 
 class CDCE6214
 {
@@ -22,18 +21,17 @@ class CDCE6214
     double getChannelFreq(int channel);
 
   private:
-    uint8_t setFreq(double freq, int ch); // Get Channel Divider --> CHD = floor(CLK * D * N / (PSA * f))
-    uint8_t writeToReg(int reg, int data);
+    uint8_t setFreq(double freq, int channel);
+    uint8_t writeToReg(uint16_t reg, uint16_t data);
 
     uint8_t _address; // I2C Address
     double crystal_freq;
 
-    // Frequency Parameters
     double D;
     int N;
     int PSA;
-    int CHD[2]; // Channel 1 is 0, Channel 2 is 1
-    double CHfreq[2]; // Channel 1 is 0, Channel 2 is 1
+    int CHD[2]; // Channel dividers
+    double CHfreq[2]; // Output frequencies for channels 1 and 2 (0 or 1 respectively)
 };
 
 #endif

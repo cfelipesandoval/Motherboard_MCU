@@ -25,16 +25,16 @@
 // // ADC3644 Definitions
 
 // Data Pins (These are GPIO number so fix)
-// #define ADC_SCL 48
-// #define ADC_SDIO 38
-// #define ADC_CS 47
-// #define ADC_RESET 1
+#define ADC_SCL GPIO_NUM_48
+#define ADC_SDIO GPIO_NUM_38
+#define ADC_CS GPIO_NUM_47
+#define ADC_RESET GPIO_NUM_1
 
 // Data Pins (With arduino pinout)
-#define ADC_SCL 13
-#define ADC_SDIO 11
-#define ADC_CS 12
-#define ADC_RESET 17
+// #define ADC_SCL 13
+// #define ADC_SDIO 11
+// #define ADC_CS 12
+// #define ADC_RESET 17
 
 #define ADC_SPI_FREQ 1000000
 
@@ -45,10 +45,8 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-
 // // Communication Protocol 
 #define MCU_RX_PIN 50
 #define MCU_TX_PIN 49
-
 
 #endif

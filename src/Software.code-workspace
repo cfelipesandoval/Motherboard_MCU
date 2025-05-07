@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "Motherboard_MCU",
+			"path": ".."
+		},
+		{
+			"name": "ADC_MCU",
+			"path": "../../../../../../../Documents/PlatformIO/Projects/ADC_MCU"
+		},
+		{
+			"name": "ADC_MCU",
+			"path": "../../ADC_MCU/ADC_MCU"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.py": "python",
+			"*.m": "matlab",
+			"cstdint": "cpp",
+			"chrono": "cpp",
+			"cmath": "cpp",
+			"random": "cpp"
+		}
+	}
+}
