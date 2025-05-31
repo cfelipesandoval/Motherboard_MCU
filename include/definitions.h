@@ -5,7 +5,6 @@
 #define DEBUG
 
 // // CDCE6214 Definitions
-
 // Data Pins
 #define SDA 1 // Change to actual pin
 #define SCL 2 // Change to actual pin
