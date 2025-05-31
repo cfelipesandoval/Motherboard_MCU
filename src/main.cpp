@@ -17,7 +17,7 @@ void setup()
   Serial.println("Init start"); // Default 40 MHz MCU and ~50 MHz ADC
   
   // // Initialize Clocks
-  Serial.println("\nInitializing Clocks");
+  Serial.println("\nInitiazlizing Clocks");
 
   if(ext_clock.init(40, 50))
   {
